@@ -1,5 +1,3 @@
-version: '2'
-
 services:
   db:
     image: mariadb:10.1
@@ -8,9 +6,11 @@ services:
       MYSQL_USER: your_filerun_username
       MYSQL_PASSWORD: your_filerun_password
       MYSQL_DATABASE: your_filerun_database
+    volumes:
+      - mysql_data:/var/lib/mysql  # Define volume here
 
   web:
-    image: filerun/filerun:8.1
+    image: your_filerun_image  # Make sure this matches your built image name
     environment:
       FR_DB_HOST: db
       FR_DB_PORT: 3306
@@ -23,7 +23,13 @@ services:
       APACHE_RUN_GROUP_ID: 33
     depends_on:
       - db
-    links:
-      - db:db
     ports:
       - "80:80"
+    volumes:
+      - filerun_data:/var/www/html  # Mounting the volume properly
+      - filerun_user_files:/user-files
+
+volumes:
+  mysql_data:
+  filerun_data:
+  filerun_user_files:
