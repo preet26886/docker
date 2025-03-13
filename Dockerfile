@@ -79,13 +79,13 @@ RUN apt-get update  \
     && curl -o /tmp/stl-thumb.deb -L https://github.com/unlimitedbacon/stl-thumb/releases/download/v0.4.0/stl-thumb_0.4.0_amd64.deb \
     && dpkg -i /tmp/stl-thumb.deb \
 # Install LibreOffice
-    && echo [Install LibreOffice ${LIBREOFFICE_VERSION}] \
-    && curl -sSL -o /tmp/lo.tar.gz https://download.documentfoundation.org/libreoffice/stable/${LIBREOFFICE_VERSION}/deb/x86_64/LibreOffice_${LIBREOFFICE_VERSION}_Linux_x86-64_deb.tar.gz \
-    && ls -lh /tmp/lo.tar.gz \
-    && file /tmp/lo.tar.gz \
-    && tar -tvf /tmp/lo.tar.gz || (echo "Downloaded file is not a valid tar.gz" && exit 1) \
-    && tar xvfz /tmp/lo.tar.gz -C /tmp \
-    && dpkg -i /tmp/LibreOffice_*/DEBS/*.deb \
+echo "Installing LibreOffice 25.2.1"
+wget -O /tmp/lo.tar.gz https://download.documentfoundation.org/libreoffice/stable/25.2.1/deb/x86_64/LibreOffice_25.2.1_Linux_x86-64_deb.tar.gz
+ls -lh /tmp/lo.tar.gz
+file /tmp/lo.tar.gz
+tar -tvf /tmp/lo.tar.gz || (echo "Downloaded file is not a valid tar.gz" && exit 1)
+tar xvf /tmp/lo.tar.gz -C /tmp
+sudo dpkg -i /tmp/LibreOffice_*/DEBS/*.deb
 # Enable Apache XSendfile
     && echo [Enable Apache XSendfile] \
 	&& echo "XSendFile On\nXSendFilePath /user-files" | tee "/etc/apache2/conf-available/filerun.conf" \
