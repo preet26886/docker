@@ -115,6 +115,7 @@ RUN echo "[Install vips ${LIBVIPS_VERSION}]" \
     && curl -o /tmp/vips.tar.gz -L https://github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/vips-${LIBVIPS_VERSION}.tar.gz \
     && tar -zxf /tmp/vips.tar.gz -C /tmp \
     && cd /tmp/vips-${LIBVIPS_VERSION} \
+    && apt-get install -y libtool automake autoconf pkg-config \
     && ./configure \
     && make && make install \
     && ldconfig
