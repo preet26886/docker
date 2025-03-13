@@ -63,6 +63,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     supervisor \
     wget \
     tar \
+    build-essential \
+    pkg-config \
+    libglib2.0-dev \
+    libpoppler-glib-dev \
     && apt-get clean
 
 # Create directories for supervisord logs and process
