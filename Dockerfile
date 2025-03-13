@@ -4,6 +4,9 @@ FROM php:8.1-apache
 # Install required PHP extensions
 RUN docker-php-ext-install pdo_mysql
 
+# Set ServerName to suppress Apache warnings
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
 # Copy FileRun files to the container
 COPY . /var/www/html/
 
