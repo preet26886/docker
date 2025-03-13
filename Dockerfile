@@ -10,8 +10,9 @@ RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 # Copy FileRun files to the container
 COPY . /var/www/html/
 
-# Set permissions
+# Set correct permissions for Apache
 RUN chown -R www-data:www-data /var/www/html
+RUN chmod -R 755 /var/www/html
 
 # Expose port 80
 EXPOSE 80
