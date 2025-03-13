@@ -87,34 +87,38 @@ RUN tar -tvf /tmp/lo.tar.gz || (echo "Downloaded file is not a valid tar.gz" && 
 RUN tar xvf /tmp/lo.tar.gz -C /tmp
 RUN dpkg -i /tmp/LibreOffice_*/DEBS/*.deb
 # Enable Apache XSendfile
-    && echo [Enable Apache XSendfile] \
-	&& echo "XSendFile On\nXSendFilePath /user-files" | tee "/etc/apache2/conf-available/filerun.conf" \
-	&& a2enconf filerun \
+RUN echo "[Enable Apache XSendfile]" \
+    && echo "XSendFile On\nXSendFilePath /user-files" | tee "/etc/apache2/conf-available/filerun.conf" \
+    && a2enconf filerun 
+
 # Install ImageMagick from source
-    && echo [Install ImageMagick] \
-	&& curl -o /tmp/im.tar.gz -L https://download.imagemagick.org/ImageMagick/download/ImageMagick.tar.gz \
-	&& tar -zxf /tmp/im.tar.gz -C /tmp \
+RUN echo "[Install ImageMagick]" \
+    && curl -o /tmp/im.tar.gz -L https://download.imagemagick.org/ImageMagick/download/ImageMagick.tar.gz \
+    && tar -zxf /tmp/im.tar.gz -C /tmp \
     && cd /tmp/ImageMagick* \
     && ./configure --with-modules --with-gslib --without-magick-plus-plus --without-perl --without-x --disable-docs --disable-static \
     && make && make install \
-	&& ldconfig /usr/local/lib \
+    && ldconfig /usr/local/lib 
+
 # Install vips from source
-    && echo [Install vips ${LIBVIPS_VERSION}] \
-	&& curl -o /tmp/vips.tar.gz -L https://github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/vips-${LIBVIPS_VERSION}.tar.gz \
-	&& tar -zxf /tmp/vips.tar.gz -C /tmp \
+RUN echo "[Install vips ${LIBVIPS_VERSION}]" \
+    && curl -o /tmp/vips.tar.gz -L https://github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/vips-${LIBVIPS_VERSION}.tar.gz \
+    && tar -zxf /tmp/vips.tar.gz -C /tmp \
     && cd /tmp/vips-${LIBVIPS_VERSION} \
     && ./configure \
     && make && make install \
-	&& ldconfig \
-#Cleanup \
-    && docker-php-source delete \
+    && ldconfig 
+
+# Cleanup
+RUN docker-php-source delete \
     && apt-get clean \
     && rm -rf /tmp/* \
-	&& rm -rf /var/lib/apt/lists/* \
-#FileRun optimizations
-	&& mv /filerun/filerun-optimization.ini /usr/local/etc/php/conf.d/ \
-	&& mkdir -p /user-files \
-	&& chown www-data:www-data /user-files \
-	&& chmod +x /filerun/entrypoint.sh
+    && rm -rf /var/lib/apt/lists/* 
+
+# FileRun optimizations
+RUN mv /filerun/filerun-optimization.ini /usr/local/etc/php/conf.d/ \
+    && mkdir -p /user-files \
+    && chown www-data:www-data /user-files \
+    && chmod +x /filerun/entrypoint.sh
+
 ENTRYPOINT ["/filerun/entrypoint.sh"]
-CMD ["/usr/bin/supervisord", "-c", "/filerun/supervisord.conf"]
