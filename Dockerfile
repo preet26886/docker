@@ -1,5 +1,6 @@
 FROM php:8.1.23-apache-bullseye
 
+# Set environment variables
 ENV FR_DB_HOST=db \
     FR_DB_PORT=3306 \
     FR_DB_NAME=filerun \
@@ -13,13 +14,12 @@ ENV FR_DB_HOST=db \
     LIBREOFFICE_VERSION="7.5.5" \
     PHP_VERSION_SHORT="8.1"
 
+# Copy FileRun to the container
 COPY ./filerun /filerun
 
-# Install necessary packages
-RUN apt-get update \
+# Install required system dependencies
+RUN apt-get update  \
     && apt-get install -y --no-install-recommends \
-        wget \
-        dpkg \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
         libopenjp2-7-dev \
@@ -62,18 +62,20 @@ RUN apt-get update \
         cron \
         vim \
         supervisor \
-    && rm -rf /var/lib/apt/lists/*
+        build-essential \
+        libglib2.0-dev \
+        pkg-config \
+    && mkdir /var/log/supervisord /var/run/supervisord
 
-# Setup directories for supervisord and php extensions
-RUN mkdir /var/log/supervisord /var/run/supervisord \
-    && docker-php-ext-configure zip \
+# Install PHP extensions and other required software
+RUN docker-php-ext-configure zip \
     && docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ --with-webp \
     && docker-php-ext-configure ldap \
     && docker-php-ext-install -j$(nproc) pdo_mysql exif zip gd opcache ldap \
     && a2enmod rewrite
 
 # Install ionCube
-RUN echo "[Install ionCube]" \
+RUN echo [Install ionCube] \
     && curl -o /tmp/ioncube.zip -L https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.zip \
     && PHP_EXT_DIR=$(php-config --extension-dir) \
     && unzip -j /tmp/ioncube.zip ioncube/ioncube_loader_lin_${PHP_VERSION_SHORT}.so -d $PHP_EXT_DIR \
@@ -81,20 +83,15 @@ RUN echo "[Install ionCube]" \
     && rm -rf /tmp/ioncube
 
 # Install STL-THUMB
-RUN echo "[Install STL-THUMB]" \
+RUN echo [Install STL-THUMB] \
     && curl -o /tmp/stl-thumb.deb -L https://github.com/unlimitedbacon/stl-thumb/releases/download/v0.4.0/stl-thumb_0.4.0_amd64.deb \
     && dpkg -i /tmp/stl-thumb.deb
 
 # Install LibreOffice
-RUN echo "Installing LibreOffice ${LIBREOFFICE_VERSION}" \
+RUN echo "Installing LibreOffice 25.2.1" \
     && wget -O /tmp/lo.tar.gz https://download.documentfoundation.org/libreoffice/stable/25.2.1/deb/x86_64/LibreOffice_25.2.1_Linux_x86-64_deb.tar.gz \
     && tar -xvzf /tmp/lo.tar.gz -C /tmp \
     && dpkg -i /tmp/LibreOffice_*/DEBS/*.deb
-
-# Enable Apache XSendfile
-RUN echo "[Enable Apache XSendfile]" \
-    && echo "XSendFile On\nXSendFilePath /user-files" | tee "/etc/apache2/conf-available/filerun.conf" \
-    && a2enconf filerun
 
 # Install ImageMagick from source
 RUN echo "[Install ImageMagick]" \
@@ -114,7 +111,7 @@ RUN echo "[Install vips ${LIBVIPS_VERSION}]" \
     && make && make install \
     && ldconfig
 
-# Cleanup
+# Cleanup unnecessary files
 RUN docker-php-source delete \
     && apt-get clean \
     && rm -rf /tmp/* \
@@ -126,4 +123,5 @@ RUN mv /filerun/filerun-optimization.ini /usr/local/etc/php/conf.d/ \
     && chown www-data:www-data /user-files \
     && chmod +x /filerun/entrypoint.sh
 
+# Set entrypoint
 ENTRYPOINT ["/filerun/entrypoint.sh"]
