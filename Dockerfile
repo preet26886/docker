@@ -80,7 +80,10 @@ RUN apt-get update  \
     && dpkg -i /tmp/stl-thumb.deb \
 # Install LibreOffice
     && echo [Install LibreOffice ${LIBREOFFICE_VERSION}] \
-    && curl -o /tmp/lo.tar.gz -L https://download.documentfoundation.org/libreoffice/stable/${LIBREOFFICE_VERSION}/deb/x86_64/LibreOffice_${LIBREOFFICE_VERSION}_Linux_x86-64_deb.tar.gz \
+    && curl -sSL -o /tmp/lo.tar.gz https://download.documentfoundation.org/libreoffice/stable/${LIBREOFFICE_VERSION}/deb/x86_64/LibreOffice_${LIBREOFFICE_VERSION}_Linux_x86-64_deb.tar.gz \
+    && ls -lh /tmp/lo.tar.gz \
+    && file /tmp/lo.tar.gz \
+    && tar -tvf /tmp/lo.tar.gz || (echo "Downloaded file is not a valid tar.gz" && exit 1) \
     && tar xvfz /tmp/lo.tar.gz -C /tmp \
     && dpkg -i /tmp/LibreOffice_*/DEBS/*.deb \
 # Enable Apache XSendfile
