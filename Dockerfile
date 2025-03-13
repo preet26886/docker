@@ -8,11 +8,17 @@ RUN docker-php-ext-install pdo_mysql
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Copy FileRun files to the container
-COPY . /var/www/html/
+COPY ./filerun /var/www/html/
 
 # Set correct permissions for Apache
 RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 /var/www/html
+
+# Allow access to the Document Root
+RUN echo "<Directory /var/www/html>\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>" >> /etc/apache2/apache2.conf
 
 # Expose port 80
 EXPOSE 80
